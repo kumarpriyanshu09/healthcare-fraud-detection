@@ -1,7 +1,11 @@
 {
-  "model": "Random Forest",
+  "model": "Logistic Regression",
   "auc": 0.955,
   "precision_legit": 0.96,
+  "precision_fraud": 0.79,
+  "recall_legit": 0.98,
   "recall_fraud": 0.55,
+  "f1_legit": 0.97,
+  "f1_fraud": 0.65,
   "accuracy": 0.94
 }
