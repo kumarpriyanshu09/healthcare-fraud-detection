@@ -1,27 +1,3 @@
-""
-BeneID
-DOB
-DOD
-Gender
-Race
-RenalDiseaseIndicator
-State
-County
-NoOfMonths_PartACov
-NoOfMonths_PartBCov
-ChronicCond_Alzheimer
-ChronicCond_Heartfailure
-ChronicCond_KidneyDisease
-ChronicCond_Cancer
-ChronicCond_ObstrPulmonary
-ChronicCond_Depression
-ChronicCond_Diabetes
-ChronicCond_IschemicHeart
-ChronicCond_Osteoporasis
-ChronicCond_rheumatoidarthritis
-ChronicCond_stroke
-IPAnnualReimbursementAmt
-IPAnnualDeductibleAmt
-OPAnnualReimbursementAmt
-OPAnnualDeductibleAmt
-HasDied
+version https://git-lfs.github.com/spec/v1
+oid sha256:ee47a16cd30e778d325d317ffdf50fc41f2712a0041379f317d02559f29fe551
+size 472
