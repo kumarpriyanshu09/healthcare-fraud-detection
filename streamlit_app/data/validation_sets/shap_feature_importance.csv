@@ -1,29 +1,3 @@
-feature,mean_abs_shap
-total_reimb,2.2865713
-kidney_rate,0.24103649
-heartfail_rate,0.23944108
-claims_per_bene,0.2048332
-median_reimb,0.19457248
-avg_days_between_claims,0.18750222
-pct_bene_multiclaim,0.17067151
-avg_diag_diversity,0.16367814
-pct_weekend,0.16045043
-pct_deceased,0.15261759
-avg_deductible,0.14571209
-pct_male,0.1395862
-max_reimb,0.13819247
-alzheimer_rate,0.13319387
-avg_age,0.13063446
-total_claims,0.12978044
-std_reimb,0.12445655
-total_deductible,0.12124591
-pct_high_value,0.10236121
-unique_beneficiaries,0.102305666
-pct_all_diag_filled,0.093375795
-avg_reimb,0.08519229
-diabetes_rate,0.08053035
-inpatient_claims,0.07349169
-inpt_outpt_ratio,0.050027482
-avg_proc_diversity,0.034644257
-race_diversity,0.026300268
-outpatient_claims,0.0141391335
+version https://git-lfs.github.com/spec/v1
+oid sha256:e37116342327fea8bff89b867d1165e8ff9b3516e85c2c68c640971d3ab71202
+size 753

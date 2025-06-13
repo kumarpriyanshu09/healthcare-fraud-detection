@@ -1,28 +1,3 @@
-""
-BeneID
-ClaimID
-ClaimStartDt
-ClaimEndDt
-Provider
-InscClaimAmtReimbursed
-AttendingPhysician
-OperatingPhysician
-OtherPhysician
-ClmDiagnosisCode_1
-ClmDiagnosisCode_2
-ClmDiagnosisCode_3
-ClmDiagnosisCode_4
-ClmDiagnosisCode_5
-ClmDiagnosisCode_6
-ClmDiagnosisCode_7
-ClmDiagnosisCode_8
-ClmDiagnosisCode_9
-ClmDiagnosisCode_10
-ClmProcedureCode_1
-ClmProcedureCode_2
-ClmProcedureCode_3
-ClmProcedureCode_4
-ClmProcedureCode_5
-ClmProcedureCode_6
-DeductibleAmtPaid
-ClmAdmitDiagnosisCode
+version https://git-lfs.github.com/spec/v1
+oid sha256:5052b8e3375c15cd56b2a6a846ab06ecfec41ef8112070b2fbd4e348fb16a187
+size 472
