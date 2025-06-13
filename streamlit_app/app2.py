@@ -6,6 +6,7 @@ import shap
 import json
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 
 # Set page configuration for wide layout
 st.set_page_config(
@@ -15,25 +16,65 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# --- Path Configuration ---
+# Get the directory where this script is located
+SCRIPT_DIR = Path(__file__).parent
+DATA_DIR = SCRIPT_DIR / "data"
+
+# Alternative path if running from root directory (Streamlit Cloud sometimes does this)
+if not DATA_DIR.exists():
+    # Try looking for data directory in parent directory or root
+    SCRIPT_DIR = Path(__file__).parent.parent
+    DATA_DIR = SCRIPT_DIR / "streamlit_app" / "data"
+    if not DATA_DIR.exists():
+        # Fallback to current working directory
+        DATA_DIR = Path.cwd() / "streamlit_app" / "data"
+
+print(f"Current working directory: {os.getcwd()}")
+print(f"Script directory: {SCRIPT_DIR}")
+print(f"Data directory: {DATA_DIR}")
+print(f"Data directory exists: {DATA_DIR.exists()}")
+
+# Debug: List contents of directories to help troubleshoot
+if DATA_DIR.exists():
+    print(f"Data directory contents: {list(DATA_DIR.iterdir())[:5]}...")  # Show first 5 items
+else:
+    print("Data directory not found, checking current working directory...")
+    cwd = Path.cwd()
+    print(f"Current working directory contents: {list(cwd.iterdir())[:10]}...")
+    # Try to find data directory anywhere
+    for item in cwd.rglob("data"):
+        if item.is_dir() and (item / "models").exists():
+            DATA_DIR = item
+            print(f"Found data directory at: {DATA_DIR}")
+            break
+
 # --- 1. Load model, features, and feature means ---
 @st.cache_resource
 def load_model():
     """Load the trained XGBoost model from the specified path"""
-    return joblib.load("data/models/xgb_classifier.pkl")
+    model_path = DATA_DIR / "models" / "xgb_classifier.pkl"
+    print(f"Attempting to load model from: {model_path}")
+    print(f"Model file exists: {model_path.exists()}")
+    return joblib.load(str(model_path))
 
 @st.cache_resource
 def get_feature_info():
     """Load feature information and calculate means for default form values"""
     # Load the exact feature set used for training
     try:
-        X_train = pd.read_parquet("data/validation_sets/X_train_full.parquet")
+        train_features_path = DATA_DIR / "validation_sets" / "X_train_full.parquet"
+        print(f"Attempting to load training features from: {train_features_path}")
+        X_train = pd.read_parquet(str(train_features_path))
         feature_cols = X_train.columns.tolist()
         feature_means = X_train.mean().to_dict()
         return feature_cols, feature_means
     except Exception as e:
         print(f"Could not load training data, falling back to features_full.parquet: {e}")
         # Fallback to manual feature selection
-        df = pd.read_parquet("data/features_full.parquet")
+        features_path = DATA_DIR / "features_full.parquet"
+        print(f"Attempting to load features from: {features_path}")
+        df = pd.read_parquet(str(features_path))
         
         # Use the exact 28 features from the training data (excluding pct_all_proc_filled)
         training_features = [
@@ -58,7 +99,9 @@ feature_cols, feature_means = get_feature_info()
 
 # --- 2. Load metrics ---
 try:
-    with open("data/metrics/XGBost_metrics.json") as f:
+    metrics_path = DATA_DIR / "metrics" / "XGBost_metrics.json"
+    print(f"Attempting to load metrics from: {metrics_path}")
+    with open(str(metrics_path)) as f:
         metrics = json.load(f)
 except Exception as e:
     print(f"Error loading metrics: {e}")
@@ -169,10 +212,11 @@ with tab1:
     # Dataset overview
     st.markdown("### 📊 **Dataset Overview**")
     
-    if os.path.exists("data/eda/provider_fraud_label_distribution.png"):
+    fraud_dist_path = DATA_DIR / "eda" / "provider_fraud_label_distribution.png"
+    if fraud_dist_path.exists():
         overview_col1, overview_col2 = st.columns([2, 1])
         with overview_col1:
-            st.image("data/eda/provider_fraud_label_distribution.png", 
+            st.image(str(fraud_dist_path), 
                     caption="Distribution of Fraud Labels in Training Data", 
                     use_container_width=True)
         with overview_col2:
@@ -499,16 +543,18 @@ with tab3:
     viz_col1, viz_col2 = st.columns(2)
     
     with viz_col1:
-        if os.path.exists("data/plots/roc_XGBoost.png"):
-            st.image("data/plots/roc_XGBoost.png", 
+        roc_path = DATA_DIR / "plots" / "roc_XGBoost.png"
+        if roc_path.exists():
+            st.image(str(roc_path), 
                     caption="ROC Curve - Shows model's ability to distinguish between classes", 
                     use_container_width=True)
         else:
             st.info("📊 ROC curve visualization will appear here when available")
     
     with viz_col2:
-        if os.path.exists("data/plots/conf_matrix_XGBoost.png"):
-            st.image("data/plots/conf_matrix_XGBoost.png", 
+        conf_matrix_path = DATA_DIR / "plots" / "conf_matrix_XGBoost.png"
+        if conf_matrix_path.exists():
+            st.image(str(conf_matrix_path), 
                     caption="Confusion Matrix - Breakdown of correct vs incorrect predictions", 
                     use_container_width=True)
         else:
@@ -522,12 +568,15 @@ with tab3:
     shap_viz_col1, shap_viz_col2 = st.columns([3, 2])
     
     with shap_viz_col1:
-        if os.path.exists("data/plots/shap_summary_bar.png"):
-            st.image("data/plots/shap_summary_bar.png", 
+        shap_summary_path = DATA_DIR / "plots" / "shap_summary_bar.png"
+        shap_beeswarm_path = DATA_DIR / "plots" / "shap_beeswarm.png"
+        
+        if shap_summary_path.exists():
+            st.image(str(shap_summary_path), 
                     caption="SHAP Feature Importance - Most influential features for fraud detection", 
                     use_container_width=True)
-        elif os.path.exists("data/plots/shap_beeswarm.png"):
-            st.image("data/plots/shap_beeswarm.png", 
+        elif shap_beeswarm_path.exists():
+            st.image(str(shap_beeswarm_path), 
                     caption="SHAP Beeswarm Plot - Feature impact distribution", 
                     use_container_width=True)
         else:
@@ -554,10 +603,11 @@ with tab3:
         """)
     
     # Example Provider Analysis
-    if os.path.exists("data/plots/shap_force_provider_13.png"):
+    shap_force_path = DATA_DIR / "plots" / "shap_force_provider_13.png"
+    if shap_force_path.exists():
         st.divider()
         st.markdown("#### 🔬 **Example: Individual Provider Analysis**")
-        st.image("data/plots/shap_force_provider_13.png", 
+        st.image(str(shap_force_path), 
                 caption="SHAP Force Plot - Detailed explanation for a specific provider (Provider #13)", 
                 use_container_width=True)
         st.markdown("""
@@ -664,12 +714,15 @@ with tab4:
     
     with insights_col2:
         # Risk distribution or correlation heatmap if available
-        if os.path.exists("data/eda/most_correlated_feature_with_fraud.png"):
-            st.image("data/eda/most_correlated_feature_with_fraud.png", 
+        corr_feature_path = DATA_DIR / "eda" / "most_correlated_feature_with_fraud.png"
+        heatmap_path = DATA_DIR / "eda" / "feature_corr_heatmap.png"
+        
+        if corr_feature_path.exists():
+            st.image(str(corr_feature_path), 
                     caption="Top Feature Correlated with Fraud", 
                     use_container_width=True)
-        elif os.path.exists("data/eda/feature_corr_heatmap.png"):
-            st.image("data/eda/feature_corr_heatmap.png", 
+        elif heatmap_path.exists():
+            st.image(str(heatmap_path), 
                     caption="Feature Correlation Analysis", 
                     use_container_width=True)
         else:
@@ -684,8 +737,9 @@ with tab4:
     
     with viz_col1:
         st.markdown("### Feature Importance")
-        if os.path.exists("data/plots/shap_summary_bar.png"):
-            st.image("data/plots/shap_summary_bar.png", 
+        shap_summary_path2 = DATA_DIR / "plots" / "shap_summary_bar.png"
+        if shap_summary_path2.exists():
+            st.image(str(shap_summary_path2), 
                     caption="Top Features Driving Model Predictions", 
                     use_container_width=True)
         else:
@@ -693,19 +747,21 @@ with tab4:
     
     with viz_col2:
         st.markdown("### Model Performance")
-        if os.path.exists("data/plots/conf_matrix_XGBoost.png"):
-            st.image("data/plots/conf_matrix_XGBoost.png", 
+        conf_matrix_path2 = DATA_DIR / "plots" / "conf_matrix_XGBoost.png"
+        if conf_matrix_path2.exists():
+            st.image(str(conf_matrix_path2), 
                     caption="Confusion Matrix (XGBoost)", 
                     use_container_width=True)
         else:
             st.info("📊 Confusion matrix will appear here when available")
     
     # ROC Curve (full width)
-    if os.path.exists("data/plots/roc_XGBoost.png"):
+    roc_path2 = DATA_DIR / "plots" / "roc_XGBoost.png"
+    if roc_path2.exists():
         st.markdown("### ROC Curve Analysis")
         roc_col1, roc_col2, roc_col3 = st.columns([1, 2, 1])
         with roc_col2:
-            st.image("data/plots/roc_XGBoost.png", 
+            st.image(str(roc_path2), 
                     caption="ROC Curve showing excellent discrimination (AUC = 0.947)", 
                     use_container_width=True)
     
