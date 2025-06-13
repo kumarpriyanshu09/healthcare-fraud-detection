@@ -1,0 +1,8 @@
+{
+    "Providers in train": 5410,
+    "Providers in inpatient": 2092,
+    "Providers in outpatient": 5012,
+    "Beneficiaries in claims (inpatient)": 31289,
+    "Beneficiaries in claims (outpatient)": 133980,
+    "Beneficiaries in beneficiary data": 138556
+}

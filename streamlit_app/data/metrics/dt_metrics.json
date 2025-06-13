@@ -1,0 +1,10 @@
+{
+  "model": "Decision Tree",
+  "auc": 0.654,
+  "precision_legit": 0.95,
+  "precision_fraud": 0.47,
+  "recall_legit": 0.94,
+  "recall_fraud": 0.54,
+  "f1_legit": 0.95,
+  "f1_fraud": 0.51
+}

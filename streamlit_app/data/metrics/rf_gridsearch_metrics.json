@@ -1,0 +1,12 @@
+{
+  "model": "Random Forest (Grid Search)",
+  "auc": 0.9538,
+  "precision_legit": 0.96,
+  "precision_fraud": 0.8,
+  "recall_legit": 0.99,
+  "recall_fraud": 0.56,
+  "f1_legit": 0.97,
+  "f1_fraud": 0.66,
+  "best_numTrees": 100,
+  "best_maxDepth": 5
+}

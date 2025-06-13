@@ -1,0 +1,10 @@
+{
+  "model": "XGBoost",
+  "auc": 0.947,
+  "precision_legit": 0.97,
+  "precision_fraud": 0.53,
+  "recall_legit": 0.93,
+  "recall_fraud": 0.76,
+  "f1_legit": 0.95,
+  "f1_fraud": 0.62
+}

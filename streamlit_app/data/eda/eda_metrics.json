@@ -1,0 +1,19 @@
+{
+  "fraud_percent": 9.35,
+  "legit_percent": 90.65,
+  "avg_reimb_fraud": 584350,
+  "avg_reimb_legit": 53194,
+  "very_high_risk_fraud_rate": 33.99,
+  "top_outliers": [
+    {
+      "Provider": "PRV52019",
+      "Reimb": 5996050,
+      "Fraud": 1
+    },
+    {
+      "Provider": "PRV55462",
+      "Reimb": 4713830,
+      "Fraud": 1
+    }
+  ]
+}

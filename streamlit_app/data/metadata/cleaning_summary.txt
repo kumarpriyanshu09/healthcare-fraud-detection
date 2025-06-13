@@ -1,0 +1,27 @@
+
+Data Cleaning Summary
+
+1. Date Columns
+All relevant columns in inpatient, outpatient, and beneficiary data converted to pandas datetime.
+
+2. Target & Indicators
+- PotentialFraud (Train.csv): Encoded as 0 (No) and 1 (Yes).
+- RenalDiseaseIndicator (Train_Beneficiarydata.csv): Encoded as 0 ('0') and 1 ('Y').
+
+3. Numeric & Code Nulls
+- DeductibleAmtPaid: Nulls set to 0 (means no deductible paid).
+- DiagnosisGroupCode: Nulls set to -1 (represents “missing/unknown”).
+- ClmAdmitDiagnosisCode: Nulls set to 'Unknown'.
+
+4. High-Missing Columns
+- All diagnosis, procedure, and physician columns with high missing are retained as-is.
+- Their presence/absence may be informative.
+- Will be addressed further during feature engineering.
+
+Checks for:
+- No critical columns have remaining nulls.
+- All date logic is valid (e.g., Admission < Discharge).
+- All value ranges are valid (e.g., reimbursement amounts ≥ 0).
+- Referential integrity is preserved between tables (all keys match).
+- Row counts are documented before and after cleaning.
+- New flags/features added as required (e.g., HasDied).

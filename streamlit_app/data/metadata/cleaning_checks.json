@@ -1,0 +1,10 @@
+{
+    "train_inp rows": 40474,
+    "train_out rows": 517737,
+    "train_bene rows": 138556,
+    "train rows": 5410,
+    "inpatient unmatched providers": 0,
+    "outpatient unmatched providers": 0,
+    "inpatient unmatched BeneID": 0,
+    "outpatient unmatched BeneID": 0
+}
