@@ -25,6 +25,61 @@ st.set_page_config(
 # Custom CSS for better styling
 st.markdown("""
 <style>
+/* Enhanced Tab Styling */
+.stTabs [data-baseweb="tab-list"] {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    background: transparent;
+    border-bottom: 2px solid #e0e0e0;
+    padding: 0 0 0.5rem 0;
+    margin: 2rem 0;
+}
+
+.stTabs [data-baseweb="tab"] {
+    position: relative;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 0.95rem;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    transform: translateY(-2px);
+}
+
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transform: translateY(-2px);
+}
+
+.stTabs [aria-selected="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+    border-radius: 2px;
+}
+
+/* Tab panels */
+.stTabs [data-baseweb="tab-panel"] {
+    padding: 2rem 0;
+}
+
+/* Original card styles */
 .metric-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 1rem;
@@ -53,6 +108,26 @@ st.markdown("""
     border-radius: 10px;
     border-left: 4px solid #ffc107;
     margin: 1rem 0;
+}
+
+/* Additional UI improvements */
+.stTabs {
+    background: transparent;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    .stTabs [data-baseweb="tab-list"] {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        min-width: auto;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -149,7 +224,15 @@ data, data_errors = load_data()
 # Load model info
 model_info = load_model_info()
 
-# Create tabs
+# Navigation section
+st.markdown("""
+<div style="text-align: center; padding: 1rem 0; margin: 2rem 0;">
+    <h2 style="color: #2563eb; margin-bottom: 0.5rem;">📊 Explore the Dashboard</h2>
+    <p style="color: #666; font-size: 1.1rem; margin: 0;">Navigate through different sections to analyze healthcare fraud detection insights</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Create tabs with enhanced styling
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📦 Dataset Overview",
     "🏗️ Feature Analysis", 
