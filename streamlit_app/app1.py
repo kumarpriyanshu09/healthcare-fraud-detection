@@ -1,3 +1,6 @@
+import os
+print("CWD:", os.getcwd())
+print("Files in CWD:", os.listdir())
 import streamlit as st
 import pandas as pd
 import numpy as np
