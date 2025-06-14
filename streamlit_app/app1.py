@@ -1,6 +1,4 @@
 import os
-print("CWD:", os.getcwd())
-print("Files in CWD:", os.listdir())
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -11,6 +9,10 @@ import os
 from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
+
+# Configure base directory for file paths
+BASE_DIR = Path(__file__).parent
+DATA_DIR = BASE_DIR / "data"
 
 # Set page configuration
 st.set_page_config(
@@ -58,7 +60,7 @@ st.markdown("""
 # Header
 st.markdown("""
 <div style="text-align: center; padding: 2rem 0; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); margin: -1rem -1rem 2rem -1rem; color: white;">
-    <h1 style="font-size: 3rem; margin: 0;">🏥 Healthcare Fraud Detection</h1>
+    <h1 style="font-size: 3rem; margin: 0;">🏥 Healthcare Provider Fraud Detection</h1>
     <p style="font-size: 1.2rem; margin: 0.5rem 0 0 0;">Business Intelligence Dashboard for Provider Risk Assessment</p>
 </div>
 """, unsafe_allow_html=True)
@@ -76,39 +78,46 @@ def load_data():
     errors = []
     try:
         # Load main features data - this contains both features and labels
-        if os.path.exists("data/features_full.parquet"):
-            data['features'] = pd.read_parquet("data/features_full.parquet")
+        features_path = DATA_DIR / "features_full.parquet"
+        if features_path.exists():
+            data['features'] = pd.read_parquet(features_path)
             # Ensure Provider column is string
             data['features']['Provider'] = data['features']['Provider'].astype(str)
         else:
-            errors.append("Missing: data/features_full.parquet")
+            errors.append(f"Missing: {features_path}")
         
         # Load EDA metrics
-        if os.path.exists("data/eda/eda_metrics.json"):
-            with open("data/eda/eda_metrics.json", 'r') as f:
+        eda_metrics_path = DATA_DIR / "eda" / "eda_metrics.json"
+        if eda_metrics_path.exists():
+            with open(eda_metrics_path, 'r') as f:
                 data['eda_metrics'] = json.load(f)
                 
         # Load counts summary
-        if os.path.exists("data/eda/counts_summary.json"):
-            with open("data/eda/counts_summary.json", 'r') as f:
+        counts_path = DATA_DIR / "eda" / "counts_summary.json"
+        if counts_path.exists():
+            with open(counts_path, 'r') as f:
                 data['counts_summary'] = json.load(f)
                 
         # Load EDA summary
-        if os.path.exists("data/eda/eda_summary.json"):
-            with open("data/eda/eda_summary.json", 'r') as f:
+        eda_summary_path = DATA_DIR / "eda" / "eda_summary.json"
+        if eda_summary_path.exists():
+            with open(eda_summary_path, 'r') as f:
                 data['eda_summary'] = json.load(f)
         
         # Load SHAP feature importance
-        if os.path.exists("data/validation_sets/shap_feature_importance.csv"):
-            data['shap_importance'] = pd.read_csv("data/validation_sets/shap_feature_importance.csv")
+        shap_path = DATA_DIR / "validation_sets" / "shap_feature_importance.csv"
+        if shap_path.exists():
+            data['shap_importance'] = pd.read_csv(shap_path)
         
         # Load provider example (Provider 13)
-        if os.path.exists("data/validation_sets/provider13_features.csv"):
-            data['provider_example'] = pd.read_csv("data/validation_sets/provider13_features.csv")
+        provider_path = DATA_DIR / "validation_sets" / "provider13_features.csv"
+        if provider_path.exists():
+            data['provider_example'] = pd.read_csv(provider_path)
         
         # Load top outliers from EDA
-        if os.path.exists("data/eda/eda_top_outliers.csv"):
-            data['top_outliers'] = pd.read_csv("data/eda/eda_top_outliers.csv")
+        outliers_path = DATA_DIR / "eda" / "eda_top_outliers.csv"
+        if outliers_path.exists():
+            data['top_outliers'] = pd.read_csv(outliers_path)
             
     except Exception as e:
         st.error(f"Critical error loading data: {e}")
@@ -124,8 +133,9 @@ def load_model_info():
     
     try:
         # Load metrics - using correct path
-        if os.path.exists("data/metrics/XGBost_metrics.json"):
-            with open("data/metrics/XGBost_metrics.json", 'r') as f:
+        metrics_path = DATA_DIR / "metrics" / "XGBost_metrics.json"
+        if metrics_path.exists():
+            with open(metrics_path, 'r') as f:
                 model_info['metrics'] = json.load(f)
             
     except Exception as e:
@@ -171,7 +181,6 @@ with tab1:
     st.markdown("""
     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem; border-radius: 15px; color: white; margin-bottom: 1.5rem;">
     <h4 style="margin: 0; color: white;">🏥 Data Source Information</h4>
-    <p style="margin: 0.5rem 0;"><strong>Source:</strong> Medicare claims data from CMS (Centers for Medicare & Medicaid Services)</p>
     <p style="margin: 0.5rem 0;"><strong>Coverage:</strong> Healthcare providers, beneficiaries (patients), and claims (inpatient/outpatient)</p>
     <p style="margin: 0; font-size: 0.9rem;"><strong>Dataset Link:</strong> <a href="https://www.kaggle.com/datasets/rohitrox/healthcare-provider-fraud-detection-analysis/code" target="_blank" style="color: #FFE4B5;">Healthcare Provider Fraud Detection Analysis - Kaggle</a></p>
     </div>
@@ -323,22 +332,25 @@ with tab1:
             
             with vis_col1:
                 st.markdown("**👥 Beneficiary Data**")
-                if os.path.exists("data/eda/eda_missing_train_bene.png"):
-                    st.image("data/eda/eda_missing_train_bene.png", caption="Missing Values in Beneficiary Dataset")
+                bene_missing_path = DATA_DIR / "eda" / "eda_missing_train_bene.png"
+                if bene_missing_path.exists():
+                    st.image(str(bene_missing_path), caption="Missing Values in Beneficiary Dataset")
                 else:
                     st.info("Beneficiary missing data plot not available")
                     
             with vis_col2:
                 st.markdown("**🏥 Inpatient Claims**")
-                if os.path.exists("data/eda/eda_missing_train_inp.png"):
-                    st.image("data/eda/eda_missing_train_inp.png", caption="Missing Values in Inpatient Claims")
+                inp_missing_path = DATA_DIR / "eda" / "eda_missing_train_inp.png"
+                if inp_missing_path.exists():
+                    st.image(str(inp_missing_path), caption="Missing Values in Inpatient Claims")
                 else:
                     st.info("Inpatient missing data plot not available")
                     
             with vis_col3:
                 st.markdown("**🚑 Outpatient Claims**")
-                if os.path.exists("data/eda/eda_missing_train_out.png"):
-                    st.image("data/eda/eda_missing_train_out.png", caption="Missing Values in Outpatient Claims")
+                out_missing_path = DATA_DIR / "eda" / "eda_missing_train_out.png"
+                if out_missing_path.exists():
+                    st.image(str(out_missing_path), caption="Missing Values in Outpatient Claims")
                 else:
                     st.info("Outpatient missing data plot not available")
             
@@ -392,9 +404,10 @@ with tab1:
     """, unsafe_allow_html=True)
     
     # Load cleaning data if available
-    if os.path.exists("data/metadata/cleaning_checks.json"):
+    cleaning_checks_path = DATA_DIR / "metadata" / "cleaning_checks.json"
+    if cleaning_checks_path.exists():
         try:
-            with open("data/metadata/cleaning_checks.json", 'r') as f:
+            with open(cleaning_checks_path, 'r') as f:
                 cleaning_checks = json.load(f)
                 
             clean_data_table = pd.DataFrame({
@@ -568,40 +581,45 @@ with tab1:
         
         with vis_col1:
             # Provider fraud distribution
-            if os.path.exists("data/eda/provider_fraud_label_distribution.png"):
-                st.image("data/eda/provider_fraud_label_distribution.png", 
+            fraud_dist_path = DATA_DIR / "eda" / "provider_fraud_label_distribution.png"
+            if fraud_dist_path.exists():
+                st.image(str(fraud_dist_path), 
                         caption="Provider Fraud Label Distribution")
             else:
                 st.warning("❌ Provider fraud distribution plot not found")
                 
             # Risk group analysis
-            if os.path.exists("data/eda/eda_fraud_rate_by_riskgroup.png"):
-                st.image("data/eda/eda_fraud_rate_by_riskgroup.png", 
+            risk_group_path = DATA_DIR / "eda" / "eda_fraud_rate_by_riskgroup.png"
+            if risk_group_path.exists():
+                st.image(str(risk_group_path), 
                         caption="Fraud Rate by Provider Risk Group")
             else:
                 st.warning("❌ Risk group analysis plot not found")
         
         with vis_col2:
             # Total reimbursements boxplot
-            if os.path.exists("data/eda/eda_total_reimbursements_boxplot.png"):
-                st.image("data/eda/eda_total_reimbursements_boxplot.png", 
+            reimb_boxplot_path = DATA_DIR / "eda" / "eda_total_reimbursements_boxplot.png"
+            if reimb_boxplot_path.exists():
+                st.image(str(reimb_boxplot_path), 
                         caption="Total Provider Reimbursement by Fraud Label")
             else:
                 st.warning("❌ Reimbursements boxplot not found")
                 
             # Time series - claims over time
-            if os.path.exists("data/eda/eda_claims_over_time.png"):
-                st.image("data/eda/eda_claims_over_time.png", 
+            claims_time_path = DATA_DIR / "eda" / "eda_claims_over_time.png"
+            if claims_time_path.exists():
+                st.image(str(claims_time_path), 
                         caption="Claims Over Time by Fraud Status")
             else:
                 st.warning("❌ Claims time series plot not found")
         
         # Additional time series visualization
         with st.expander("📈 Additional Time Series Analysis"):
-            if os.path.exists("data/eda/eda_reimbursement_over_time.png"):
-                st.image("data/eda/eda_reimbursement_over_time.png", 
+            reimb_time_path = DATA_DIR / "eda" / "eda_reimbursement_over_time.png"
+            if reimb_time_path.exists():
+                st.image(str(reimb_time_path), 
                         caption="Total Reimbursement Over Time by Provider Fraud Status", 
-                        use_column_width=True)
+                        use_container_width=True)
             else:
                 st.warning("❌ Reimbursement time series plot not found")
                 
@@ -614,69 +632,80 @@ with tab1:
             
             with table_col1:
                 st.markdown("**Top 10 Providers by Total Reimbursement**")
-                outliers_display = data['top_outliers'][['Provider', 'Total_Reimbursements', 'PotentialFraud', 'Unique_Beneficiaries']].head(10).copy()
                 
-                # Enhanced formatting
-                outliers_display['Fraud_Status'] = outliers_display['PotentialFraud'].map({
-                    1: '🚨 Fraudulent', 
-                    0: '✅ Legitimate'
-                })
-                outliers_display['Total_Reimbursements_Formatted'] = outliers_display['Total_Reimbursements'].apply(lambda x: f"${x:,.0f}")
-                outliers_display['Risk_Level'] = outliers_display.apply(lambda row: 
-                    '🔴 Very High' if row['PotentialFraud'] == 1 and row['Total_Reimbursements'] > 1000000 
-                    else '🟡 High' if row['Total_Reimbursements'] > 500000 
-                    else '🟢 Medium', axis=1)
-                
-                # Display enhanced table
-                display_cols = ['Provider', 'Total_Reimbursements_Formatted', 'Unique_Beneficiaries', 'Risk_Level', 'Fraud_Status']
-                display_table = outliers_display[display_cols].copy()
-                display_table.columns = ['Provider ID', 'Total Reimbursement', 'Beneficiaries', 'Risk Level', 'Status']
-                
-                st.dataframe(
-                    display_table,
-                    use_container_width=True,
-                    hide_index=True,
-                    column_config={
-                        "Provider ID": st.column_config.TextColumn("Provider ID", width="small"),
-                        "Total Reimbursement": st.column_config.TextColumn("Total Reimbursement", width="medium"),
-                        "Beneficiaries": st.column_config.NumberColumn("Beneficiaries", width="small"),
-                        "Risk Level": st.column_config.TextColumn("Risk Level", width="small"),
-                        "Status": st.column_config.TextColumn("Status", width="medium")
-                    }
-                )
+                # Use the features dataset instead since top_outliers may have different columns
+                if 'features' in data:
+                    # Get top providers by total reimbursement from features dataset
+                    top_providers = data['features'].nlargest(10, 'total_reimb')[['Provider', 'total_reimb', 'PotentialFraud', 'unique_beneficiaries']].copy()
+                    
+                    # Enhanced formatting
+                    top_providers['Fraud_Status'] = top_providers['PotentialFraud'].map({
+                        1: '🚨 Fraudulent', 
+                        0: '✅ Legitimate'
+                    })
+                    top_providers['Total_Reimbursements_Formatted'] = top_providers['total_reimb'].apply(lambda x: f"${x:,.0f}")
+                    top_providers['Risk_Level'] = top_providers.apply(lambda row: 
+                        '🔴 Very High' if row['PotentialFraud'] == 1 and row['total_reimb'] > 1000000 
+                        else '🟡 High' if row['total_reimb'] > 500000 
+                        else '🟢 Medium', axis=1)
+                    
+                    # Display enhanced table
+                    display_cols = ['Provider', 'Total_Reimbursements_Formatted', 'unique_beneficiaries', 'Risk_Level', 'Fraud_Status']
+                    display_table = top_providers[display_cols].copy()
+                    display_table.columns = ['Provider ID', 'Total Reimbursement', 'Beneficiaries', 'Risk Level', 'Status']
+                    
+                    st.dataframe(
+                        display_table,
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            "Provider ID": st.column_config.TextColumn("Provider ID", width="small"),
+                            "Total Reimbursement": st.column_config.TextColumn("Total Reimbursement", width="medium"),
+                            "Beneficiaries": st.column_config.NumberColumn("Beneficiaries", width="small"),
+                            "Risk Level": st.column_config.TextColumn("Risk Level", width="small"),
+                            "Status": st.column_config.TextColumn("Status", width="medium")
+                        }
+                    )
+                else:
+                    st.warning("⚠️ Provider analysis data not available")
             
             with table_col2:
                 st.markdown("**📊 Risk Distribution**")
                 
-                # Calculate risk statistics
-                fraud_count = len(outliers_display[outliers_display['PotentialFraud'] == 1])
-                total_count = len(outliers_display)
-                fraud_percentage = (fraud_count / total_count) * 100
-                
-                # Risk metrics
-                st.metric(
-                    "Fraud Rate (Top 10)", 
-                    f"{fraud_percentage:.0f}%",
-                    delta=f"{fraud_count}/{total_count} providers"
-                )
-                
-                avg_fraud_in_top = outliers_display[outliers_display['PotentialFraud'] == 1]['Total_Reimbursements'].mean()
-                avg_legit_in_top = outliers_display[outliers_display['PotentialFraud'] == 0]['Total_Reimbursements'].mean()
-                
-                if not pd.isna(avg_fraud_in_top) and not pd.isna(avg_legit_in_top):
+                # Calculate risk statistics using the features dataset
+                if 'features' in data:
+                    top_providers_analysis = data['features'].nlargest(10, 'total_reimb')
+                    
+                    fraud_count = len(top_providers_analysis[top_providers_analysis['PotentialFraud'] == 1])
+                    total_count = len(top_providers_analysis)
+                    fraud_percentage = (fraud_count / total_count) * 100
+                    
+                    # Risk metrics
                     st.metric(
-                        "Avg Fraud vs Legit", 
-                        f"{avg_fraud_in_top/avg_legit_in_top:.1f}x",
-                        delta="Higher reimbursement"
+                        "Fraud Rate (Top 10)", 
+                        f"{fraud_percentage:.0f}%",
+                        delta=f"{fraud_count}/{total_count} providers"
                     )
-                
-                # Total exposure from top providers
-                total_exposure = outliers_display['Total_Reimbursements'].sum() / 1_000_000
-                st.metric(
-                    "Total Exposure (Top 10)", 
-                    f"${total_exposure:.1f}M",
-                    delta="Combined reimbursement"
-                )
+                    
+                    avg_fraud_in_top = top_providers_analysis[top_providers_analysis['PotentialFraud'] == 1]['total_reimb'].mean()
+                    avg_legit_in_top = top_providers_analysis[top_providers_analysis['PotentialFraud'] == 0]['total_reimb'].mean()
+                    
+                    if not pd.isna(avg_fraud_in_top) and not pd.isna(avg_legit_in_top):
+                        st.metric(
+                            "Avg Fraud vs Legit", 
+                            f"{avg_fraud_in_top/avg_legit_in_top:.1f}x",
+                            delta="Higher reimbursement"
+                        )
+                    
+                    # Total exposure from top providers
+                    total_exposure = top_providers_analysis['total_reimb'].sum() / 1_000_000
+                    st.metric(
+                        "Total Exposure (Top 10)", 
+                        f"${total_exposure:.1f}M",
+                        delta="Combined reimbursement"
+                    )
+                else:
+                    st.warning("⚠️ Risk analysis data not available")
         else:
             st.warning("⚠️ Top outliers data not available")
     else:
@@ -742,10 +771,12 @@ with tab2:
     feature_stats = None
     feature_missing = None
     
-    if os.path.exists("data/features_stats.csv"):
-        feature_stats = pd.read_csv("data/features_stats.csv", index_col=0)
-    if os.path.exists("data/features_missing.csv"):
-        feature_missing = pd.read_csv("data/features_missing.csv", index_col=0)
+    feature_stats_path = DATA_DIR / "features_stats.csv"
+    if feature_stats_path.exists():
+        feature_stats = pd.read_csv(feature_stats_path, index_col=0)
+    feature_missing_path = DATA_DIR / "features_missing.csv"
+    if feature_missing_path.exists():
+        feature_missing = pd.read_csv(feature_missing_path, index_col=0)
     
     if feature_stats is not None:
         total_features = len(feature_stats) - 1  # Exclude target variable
@@ -997,8 +1028,9 @@ with tab2:
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        if os.path.exists("data/eda/feature_corr_heatmap.png"):
-            st.image("data/eda/feature_corr_heatmap.png", 
+        corr_heatmap_path = DATA_DIR / "eda" / "feature_corr_heatmap.png"
+        if corr_heatmap_path.exists():
+            st.image(str(corr_heatmap_path), 
                     caption="Feature Correlation Matrix", 
                     use_container_width=True)
         else:
@@ -1023,8 +1055,9 @@ with tab2:
     # Top correlated features visualization
     st.markdown("#### 📊 Top Features Most Correlated with Fraud")
     
-    if os.path.exists("data/eda/most_correlated_feature_with_fraud.png"):
-        st.image("data/eda/most_correlated_feature_with_fraud.png",
+    corr_features_path = DATA_DIR / "eda" / "most_correlated_feature_with_fraud.png"
+    if corr_features_path.exists():
+        st.image(str(corr_features_path),
                 caption="Boxplots of Top 5 Features Most Correlated with Fraud",
                 use_container_width=True)
     else:
@@ -1090,8 +1123,8 @@ with tab3:
         }
         
         for model_name, filename in metrics_files.items():
-            filepath = f"data/metrics/{filename}"
-            if os.path.exists(filepath):
+            filepath = DATA_DIR / "metrics" / filename
+            if filepath.exists():
                 with open(filepath, 'r') as f:
                     metrics[model_name] = json.load(f)
             else:
@@ -1235,9 +1268,9 @@ with tab3:
                 }
                 
                 if selected_model in roc_files:
-                    roc_path = f"data/plots/{roc_files[selected_model]}"
-                    if os.path.exists(roc_path):
-                        st.image(roc_path, use_container_width=True)
+                    roc_path = DATA_DIR / "plots" / roc_files[selected_model]
+                    if roc_path.exists():
+                        st.image(str(roc_path), use_container_width=True)
                     else:
                         st.warning(f"ROC curve not found: {roc_path}")
             
@@ -1251,9 +1284,9 @@ with tab3:
                 }
                 
                 if selected_model in conf_files:
-                    conf_path = f"data/plots/{conf_files[selected_model]}"
-                    if os.path.exists(conf_path):
-                        st.image(conf_path, use_container_width=True)
+                    conf_path = DATA_DIR / "plots" / conf_files[selected_model]
+                    if conf_path.exists():
+                        st.image(str(conf_path), use_container_width=True)
                     else:
                         st.warning(f"Confusion matrix not found: {conf_path}")
             
@@ -1471,28 +1504,34 @@ with tab4:
         
         try:
             # Load feature importance
-            if os.path.exists("data/validation_sets/shap_feature_importance.csv"):
-                shap_data['feature_importance'] = pd.read_csv("data/validation_sets/shap_feature_importance.csv")
+            shap_importance_path = DATA_DIR / "validation_sets" / "shap_feature_importance.csv"
+            if shap_importance_path.exists():
+                shap_data['feature_importance'] = pd.read_csv(shap_importance_path)
             
             # Load validation features for provider analysis
-            if os.path.exists("data/validation_sets/X_val_full.parquet"):
-                shap_data['X_val'] = pd.read_parquet("data/validation_sets/X_val_full.parquet")
+            X_val_path = DATA_DIR / "validation_sets" / "X_val_full.parquet"
+            if X_val_path.exists():
+                shap_data['X_val'] = pd.read_parquet(X_val_path)
             
             # Load predictions
-            if os.path.exists("data/validation_sets/xgb_val_proba.csv"):
-                shap_data['predictions'] = pd.read_csv("data/validation_sets/xgb_val_proba.csv")
+            pred_path = DATA_DIR / "validation_sets" / "xgb_val_proba.csv"
+            if pred_path.exists():
+                shap_data['predictions'] = pd.read_csv(pred_path)
             
             # Load true labels
-            if os.path.exists("data/validation_sets/y_val.csv"):
-                shap_data['y_val'] = pd.read_csv("data/validation_sets/y_val.csv")
+            y_val_path = DATA_DIR / "validation_sets" / "y_val.csv"
+            if y_val_path.exists():
+                shap_data['y_val'] = pd.read_csv(y_val_path)
             
             # Load SHAP values if available
-            if os.path.exists("data/validation_sets/shap_values.npy"):
-                shap_data['shap_values'] = np.load("data/validation_sets/shap_values.npy")
+            shap_values_path = DATA_DIR / "validation_sets" / "shap_values.npy"
+            if shap_values_path.exists():
+                shap_data['shap_values'] = np.load(shap_values_path)
             
             # Load example provider data
-            if os.path.exists("data/validation_sets/provider13_features.csv"):
-                shap_data['example_provider'] = pd.read_csv("data/validation_sets/provider13_features.csv")
+            provider13_path = DATA_DIR / "validation_sets" / "provider13_features.csv"
+            if provider13_path.exists():
+                shap_data['example_provider'] = pd.read_csv(provider13_path)
                 
         except Exception as e:
             st.error(f"Error loading SHAP data: {e}")
@@ -1508,41 +1547,84 @@ with tab4:
     # Key Insights Summary
     st.subheader("💡 Key Fraud Detection Insights")
     
-    if 'feature_importance' in shap_data:
-        top_features = shap_data['feature_importance'].head(3)
+    if 'feature_importance' in shap_data and not shap_data['feature_importance'].empty:
+        feature_importance_df = shap_data['feature_importance']
         
+        # Check if the expected columns exist
+        if 'feature' in feature_importance_df.columns and 'mean_abs_shap' in feature_importance_df.columns:
+            top_features = feature_importance_df.head(3)
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                feature_1 = top_features.iloc[0]
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); padding: 1.5rem; border-radius: 10px; color: white; text-align: center;">
+                    <h4 style="margin: 0;">🚨 #1 Fraud Indicator</h4>
+                    <h3 style="margin: 0.5rem 0;">{feature_1['feature'].replace('_', ' ').title()}</h3>
+                    <p style="margin: 0;">SHAP Impact: {feature_1['mean_abs_shap']:.3f}</p>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Total reimbursement amount is the strongest predictor of fraudulent activity</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                feature_2 = top_features.iloc[1]
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%); padding: 1.5rem; border-radius: 10px; color: white; text-align: center;">
+                    <h4 style="margin: 0;">⚠️ #2 Risk Factor</h4>
+                    <h3 style="margin: 0.5rem 0;">{feature_2['feature'].replace('_', ' ').title()}</h3>
+                    <p style="margin: 0;">SHAP Impact: {feature_2['mean_abs_shap']:.3f}</p>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Patient population with kidney disease affects fraud risk</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                feature_3 = top_features.iloc[2]
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); padding: 1.5rem; border-radius: 10px; color: white; text-align: center;">
+                    <h4 style="margin: 0;">📊 #3 Pattern Indicator</h4>
+                    <h3 style="margin: 0.5rem 0;">{feature_3['feature'].replace('_', ' ').title()}</h3>
+                    <p style="margin: 0;">SHAP Impact: {feature_3['mean_abs_shap']:.3f}</p>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Heart failure patient rates signal billing patterns</p>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.warning("⚠️ SHAP feature importance data format is incompatible. Expected columns: 'feature' and 'mean_abs_shap'")
+            if not feature_importance_df.empty:
+                st.info(f"Available columns: {list(feature_importance_df.columns)}")
+    else:
+        st.warning("⚠️ SHAP feature importance data not available - using fallback insights")
+        
+        # Fallback insights when SHAP data is not available
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            feature_1 = top_features.iloc[0]
-            st.markdown(f"""
+            st.markdown("""
             <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); padding: 1.5rem; border-radius: 10px; color: white; text-align: center;">
                 <h4 style="margin: 0;">🚨 #1 Fraud Indicator</h4>
-                <h3 style="margin: 0.5rem 0;">{feature_1['feature'].replace('_', ' ').title()}</h3>
-                <p style="margin: 0;">SHAP Impact: {feature_1['mean_abs_shap']:.3f}</p>
-                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Total reimbursement amount is the strongest predictor of fraudulent activity</p>
+                <h3 style="margin: 0.5rem 0;">Total Reimbursement</h3>
+                <p style="margin: 0;">Key fraud predictor</p>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Higher reimbursements strongly correlate with fraud</p>
             </div>
             """, unsafe_allow_html=True)
         
         with col2:
-            feature_2 = top_features.iloc[1]
-            st.markdown(f"""
+            st.markdown("""
             <div style="background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%); padding: 1.5rem; border-radius: 10px; color: white; text-align: center;">
                 <h4 style="margin: 0;">⚠️ #2 Risk Factor</h4>
-                <h3 style="margin: 0.5rem 0;">{feature_2['feature'].replace('_', ' ').title()}</h3>
-                <p style="margin: 0;">SHAP Impact: {feature_2['mean_abs_shap']:.3f}</p>
-                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Patient population with kidney disease affects fraud risk</p>
+                <h3 style="margin: 0.5rem 0;">Claims Volume</h3>
+                <p style="margin: 0;">Billing pattern indicator</p>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Unusual claim frequencies signal potential fraud</p>
             </div>
             """, unsafe_allow_html=True)
         
         with col3:
-            feature_3 = top_features.iloc[2]
-            st.markdown(f"""
+            st.markdown("""
             <div style="background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%); padding: 1.5rem; border-radius: 10px; color: white; text-align: center;">
                 <h4 style="margin: 0;">📊 #3 Pattern Indicator</h4>
-                <h3 style="margin: 0.5rem 0;">{feature_3['feature'].replace('_', ' ').title()}</h3>
-                <p style="margin: 0;">SHAP Impact: {feature_3['mean_abs_shap']:.3f}</p>
-                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Heart failure patient rates signal billing patterns</p>
+                <h3 style="margin: 0.5rem 0;">Patient Demographics</h3>
+                <p style="margin: 0;">Risk profile marker</p>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Patient population characteristics affect risk assessment</p>
             </div>
             """, unsafe_allow_html=True)
     
@@ -1636,8 +1718,9 @@ with tab4:
     
     with viz_col1:
         st.markdown("##### 📈 Global Feature Importance")
-        if os.path.exists("data/plots/shap_summary_bar.png"):
-            st.image("data/plots/shap_summary_bar.png", 
+        shap_bar_path = DATA_DIR / "plots" / "shap_summary_bar.png"
+        if shap_bar_path.exists():
+            st.image(str(shap_bar_path), 
                     caption="SHAP Summary Bar Plot - Global feature importance ranking",
                     use_container_width=True)
         else:
@@ -1645,8 +1728,9 @@ with tab4:
     
     with viz_col2:
         st.markdown("##### 🎯 Feature Impact Distribution")
-        if os.path.exists("data/plots/shap_beeswarm.png"):
-            st.image("data/plots/shap_beeswarm.png",
+        shap_beeswarm_path = DATA_DIR / "plots" / "shap_beeswarm.png"
+        if shap_beeswarm_path.exists():
+            st.image(str(shap_beeswarm_path),
                     caption="SHAP Beeswarm Plot - Feature value impact on predictions",
                     use_container_width=True)
         else:
@@ -1683,8 +1767,9 @@ with tab4:
             # Force plot visualization
             st.markdown("##### 🎭 SHAP Force Plot - Why This Provider Was Flagged")
             
-            if os.path.exists("data/plots/shap_force_provider_13.png"):
-                st.image("data/plots/shap_force_provider_13.png",
+            shap_force_path = DATA_DIR / "plots" / "shap_force_provider_13.png"
+            if shap_force_path.exists():
+                st.image(str(shap_force_path),
                         caption="SHAP Force Plot showing feature contributions to fraud prediction",
                         use_container_width=True)
             else:
@@ -1779,7 +1864,7 @@ with tab5:
         """Load the trained XGBoost model"""
         try:
             import pickle
-            with open('data/models/xgb_classifier.pkl', 'rb') as f:
+            with open(str(DATA_DIR / "models" / "xgb_classifier.pkl"), 'rb') as f:
                 model = pickle.load(f)
             return model
         except Exception as e:
@@ -1790,7 +1875,7 @@ with tab5:
     def get_feature_ranges():
         """Get realistic ranges for sliders from feature stats"""
         try:
-            stats = pd.read_csv('data/features_stats.csv', index_col=0)
+            stats = pd.read_csv(str(DATA_DIR / "features_stats.csv"), index_col=0)
             ranges = {}
             for feature in stats.index:
                 if feature != 'PotentialFraud':  # Exclude target variable
@@ -2338,22 +2423,26 @@ with tab6:
         
         try:
             # Load EDA metrics for financial calculations
-            if os.path.exists("data/eda/eda_metrics.json"):
-                with open("data/eda/eda_metrics.json", 'r') as f:
+            eda_metrics_path = DATA_DIR / "eda" / "eda_metrics.json"
+            if eda_metrics_path.exists():
+                with open(eda_metrics_path, 'r') as f:
                     business_data['eda_metrics'] = json.load(f)
             
             # Load model performance metrics
-            if os.path.exists("data/metrics/XGBost_metrics.json"):
-                with open("data/metrics/XGBost_metrics.json", 'r') as f:
+            model_metrics_path = DATA_DIR / "metrics" / "XGBost_metrics.json"
+            if model_metrics_path.exists():
+                with open(model_metrics_path, 'r') as f:
                     business_data['model_metrics'] = json.load(f)
             
             # Load feature statistics
-            if os.path.exists("data/features_stats.csv"):
-                business_data['feature_stats'] = pd.read_csv("data/features_stats.csv", index_col=0)
+            feature_stats_path = DATA_DIR / "features_stats.csv"
+            if feature_stats_path.exists():
+                business_data['feature_stats'] = pd.read_csv(feature_stats_path, index_col=0)
             
             # Load validation data
-            if os.path.exists("data/validation_sets/X_val_full.parquet"):
-                business_data['validation_data'] = pd.read_parquet("data/validation_sets/X_val_full.parquet")
+            validation_path = DATA_DIR / "validation_sets" / "X_val_full.parquet"
+            if validation_path.exists():
+                business_data['validation_data'] = pd.read_parquet(validation_path)
                 
         except Exception as e:
             st.error(f"Error loading business data: {e}")
@@ -2431,9 +2520,9 @@ with tab6:
             investigation_precision = model_precision_fraud * 100
             st.markdown(f"""
             <div style="background: linear-gradient(135deg, #6f42c1 0%, #563d7c 100%); padding: 1.5rem; border-radius: 10px; color: white; text-align: center;">
-                <h4 style="margin: 0;">� Investigation Hit Rate</h4>
+                <h4 style="margin: 0;">🎯 Hit Rate</h4>
                 <h2 style="margin: 0.5rem 0;">{investigation_precision:.0f}%</h2>
-                <p style="margin: 0; font-size: 0.9rem;">Flagged cases are actual fraud</p>
+                <p style="margin: 0; font-size: 0.9rem;">Fraud Alert Accuracy</p>
             </div>
             """, unsafe_allow_html=True)
         
